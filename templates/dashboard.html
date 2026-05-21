@@ -5,18 +5,45 @@
 {% block content %}
 
 <section class="auth-section">
-    <div class="auth-container">
+    <div class="auth-container" style="max-width: 560px;">
 
         <div class="auth-header">
             <h1 class="auth-title">Welcome back, {{ user["name"] }}!</h1>
-            <p class="auth-subtitle">Your expense dashboard is coming soon.</p>
+            <p class="auth-subtitle">Here's your spending this month.</p>
         </div>
 
-        <div class="auth-card">
-            <p style="color: var(--ink); text-align: center;">
-                Expense tracking will be available in the next step.
-                For now, you're successfully logged in to Spendly.
+        <div class="mock-card">
+            <div class="mock-card-header">
+                <span class="mock-label">This month</span>
+                <span class="mock-total">₹{{ "%.2f" | format(monthly_total) }}</span>
+            </div>
+
+            <p class="mock-label" style="margin-bottom: 1rem;">
+                {{ monthly_count }} expense{{ "s" if monthly_count != 1 else "" }}
             </p>
+
+            {% if by_category %}
+                <div class="mock-bars">
+                    {% for row in by_category %}
+                    <div class="mock-bar-row">
+                        <span class="mock-cat">{{ row["category"] }}</span>
+                        <div class="mock-bar-track">
+                            <div class="mock-bar"
+                                 style="width: {{ ((row['total'] / monthly_total) * 100) | round | int }}%;">
+                            </div>
+                        </div>
+                        <span class="mock-amt">₹{{ "%.2f" | format(row["total"]) }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="text-align: center; color: var(--ink-muted); padding: 1.5rem 0; font-size: 0.9rem;">
+                    No expenses yet this month.
+                </p>
+                <div style="text-align: center;">
+                    <a href="{{ url_for('add_expense') }}" class="btn-primary">Add your first expense</a>
+                </div>
+            {% endif %}
         </div>
 
     </div>
