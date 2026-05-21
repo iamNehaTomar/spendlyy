@@ -1,7 +1,10 @@
-from flask import Flask, render_template
+import sqlite3
+from flask import Flask, render_template, request, redirect, url_for, session
+from werkzeug.security import generate_password_hash, check_password_hash
 from database.db import get_db, init_db, seed_db
 
 app = Flask(__name__)
+app.secret_key = "spendly-dev-secret"  # replace with env var in production
 
 
 # ------------------------------------------------------------------ #
@@ -13,14 +16,63 @@ def landing():
     return render_template("landing.html")
 
 
-@app.route("/register")
+@app.route("/register", methods=["GET", "POST"])
 def register():
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "")
+        password = request.form.get("password", "")
+
+        if not name:
+            return render_template("register.html", error="Please enter your full name.")
+        if len(password) < 8:
+            return render_template("register.html", error="Password must be at least 8 characters.")
+
+        db = get_db()
+        try:
+            cursor = db.execute(
+                "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+                (name, email, generate_password_hash(password)),
+            )
+            db.commit()
+            session["user_id"] = cursor.lastrowid
+        except sqlite3.IntegrityError:
+            return render_template("register.html", error="An account with that email already exists.")
+        finally:
+            db.close()
+
+        return redirect(url_for("dashboard"))
+
     return render_template("register.html")
 
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
+    if request.method == "POST":
+        email = request.form.get("email", "")
+        password = request.form.get("password", "")
+
+        db = get_db()
+        user = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+        db.close()
+
+        if user is None or not check_password_hash(user["password_hash"], password):
+            return render_template("login.html", error="Invalid email or password.")
+
+        session["user_id"] = user["id"]
+        return redirect(url_for("dashboard"))
+
     return render_template("login.html")
+
+
+@app.route("/dashboard")
+def dashboard():
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+    db = get_db()
+    user = db.execute("SELECT name FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+    db.close()
+    return render_template("dashboard.html", user=user)
 
 
 # ------------------------------------------------------------------ #
@@ -39,7 +91,8 @@ def privacy():
 
 @app.route("/logout")
 def logout():
-    return "Logout — coming in Step 3"
+    session.clear()
+    return redirect(url_for("landing"))
 
 
 @app.route("/profile")
