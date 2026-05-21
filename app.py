@@ -1,5 +1,5 @@
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db import get_db, init_db, seed_db
 
@@ -43,6 +43,8 @@ def register():
 
         return redirect(url_for("dashboard"))
 
+    if session.get("user_id"):
+        return redirect(url_for("dashboard"))
     return render_template("register.html")
 
 
@@ -62,6 +64,8 @@ def login():
         session["user_id"] = user["id"]
         return redirect(url_for("dashboard"))
 
+    if session.get("user_id"):
+        return redirect(url_for("dashboard"))
     return render_template("login.html")
 
 
@@ -70,9 +74,38 @@ def dashboard():
     if not session.get("user_id"):
         return redirect(url_for("login"))
     db = get_db()
-    user = db.execute("SELECT name FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+    user = db.execute(
+        "SELECT name FROM users WHERE id = ?",
+        (session["user_id"],)
+    ).fetchone()
+    summary = db.execute(
+        """
+        SELECT COALESCE(SUM(amount), 0.0) AS total, COUNT(*) AS count
+        FROM expenses
+        WHERE user_id = ?
+          AND strftime('%Y-%m', date) = strftime('%Y-%m', 'now')
+        """,
+        (session["user_id"],)
+    ).fetchone()
+    by_category = db.execute(
+        """
+        SELECT category, COUNT(*) AS count, SUM(amount) AS total
+        FROM expenses
+        WHERE user_id = ?
+          AND strftime('%Y-%m', date) = strftime('%Y-%m', 'now')
+        GROUP BY category
+        ORDER BY total DESC
+        """,
+        (session["user_id"],)
+    ).fetchall()
     db.close()
-    return render_template("dashboard.html", user=user)
+    return render_template(
+        "dashboard.html",
+        user=user,
+        monthly_total=summary["total"],
+        monthly_count=summary["count"],
+        by_category=by_category,
+    )
 
 
 # ------------------------------------------------------------------ #
@@ -91,6 +124,7 @@ def privacy():
 
 @app.route("/logout")
 def logout():
+    flash("You've been signed out.", "info")
     session.clear()
     return redirect(url_for("landing"))
 

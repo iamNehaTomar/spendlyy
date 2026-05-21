@@ -31,6 +31,18 @@
     </nav>
 
     <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+                <div style="max-width: var(--auth-width); margin: 1.5rem auto 0; padding: 0 1rem;">
+                    {% for category, message in messages %}
+                        <div class="auth-error"
+                             style="background: var(--accent-light); color: var(--accent); border-color: var(--border);">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </main>
 
