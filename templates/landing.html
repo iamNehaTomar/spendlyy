@@ -23,7 +23,7 @@
     </p>
     <div class="hero-actions">
         <a href="{{ url_for('register') }}" class="btn-primary btn-hero">Create free account</a>
-        <a href="#" class="btn-primary btn-hero">See how it works</a>
+        <a href="#" class="btn-primary btn-hero" id="btn-see-how">See how it works</a>
     </div>
     <div class="hero-browser">
         <div class="browser-chrome">
@@ -101,4 +101,50 @@
     </div>
 </section>
 
+<div class="video-modal" id="video-modal">
+    <div class="video-modal-backdrop" id="modal-backdrop"></div>
+    <div class="video-modal-box">
+        <button class="video-modal-close" id="modal-close" aria-label="Close">&#x2715;</button>
+        <div class="video-modal-embed">
+            <iframe
+                id="modal-iframe"
+                data-src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
+                src=""
+                allow="autoplay; encrypted-media"
+                allowfullscreen>
+            </iframe>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var btn      = document.getElementById('btn-see-how');
+    var modal    = document.getElementById('video-modal');
+    var backdrop = document.getElementById('modal-backdrop');
+    var closeBtn = document.getElementById('modal-close');
+    var iframe   = document.getElementById('modal-iframe');
+
+    function openModal() {
+        iframe.src = iframe.dataset.src;
+        modal.classList.add('is-open');
+    }
+
+    function closeModal() {
+        iframe.src = '';
+        modal.classList.remove('is-open');
+    }
+
+    btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        openModal();
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', closeModal);
+}());
+</script>
 {% endblock %}
