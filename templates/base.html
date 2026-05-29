@@ -19,30 +19,13 @@
                 <span class="brand-name">Spendly</span>
             </a>
             <div class="nav-links">
-                {% if session.get("user_id") %}
-                    <a href="{{ url_for('dashboard') }}">Dashboard</a>
-                    <a href="{{ url_for('logout') }}" class="nav-cta">Logout</a>
-                {% else %}
-                    <a href="{{ url_for('login') }}">Sign in</a>
-                    <a href="{{ url_for('register') }}" class="nav-cta">Get started</a>
-                {% endif %}
+                <a href="{{ url_for('login') }}">Sign in</a>
+                <a href="{{ url_for('register') }}" class="nav-cta">Get started</a>
             </div>
         </div>
     </nav>
 
     <main class="main-content">
-        {% with messages = get_flashed_messages(with_categories=True) %}
-            {% if messages %}
-                <div style="max-width: var(--auth-width); margin: 1.5rem auto 0; padding: 0 1rem;">
-                    {% for category, message in messages %}
-                        <div class="auth-error"
-                             style="background: var(--accent-light); color: var(--accent); border-color: var(--border);">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
         {% block content %}{% endblock %}
     </main>
 
@@ -52,8 +35,7 @@
             <span class="footer-name">Spendly</span>
             <p class="footer-copy">Track every rupee. Own your finances.</p>
             <p class="footer-links">
-                <a href="/terms">Terms and conditions</a>
-                <a href="/privacy">Privacy Policy</a>
+                <a href="{{ url_for('terms') }}">Terms and conditions</a> · <a href="{{ url_for('privacy') }}">Privacy Policy</a>
             </p>
         </div>
     </footer>

@@ -13,16 +13,6 @@
         </div>
 
         <div class="auth-card">
-            {% with messages = get_flashed_messages(with_categories=True) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="auth-error"
-                             style="background: var(--accent-light); color: var(--accent); border-color: var(--border);">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
             {% if error %}
             <div class="auth-error">{{ error }}</div>
             {% endif %}

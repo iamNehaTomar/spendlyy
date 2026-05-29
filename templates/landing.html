@@ -13,22 +13,18 @@
         <span class="badge-dot"></span>
         Free to use · No credit card needed
     </div>
-
     <h1 class="hero-heading">
         Track every rupee.<br>
         <span class="hero-heading-accent">Know where it goes.</span>
     </h1>
-
     <p class="hero-sub">
         Spendly helps you log expenses, spot patterns, and stay<br>
         on budget — without the spreadsheet headache.
     </p>
-
     <div class="hero-actions">
         <a href="{{ url_for('register') }}" class="btn-primary btn-hero">Create free account</a>
-        <a href="#" class="btn-primary btn-hero" id="btnSeeHow">See how it works</a>
+        <a href="#" class="btn-primary btn-hero" id="btn-see-how">See how it works</a>
     </div>
-
     <div class="hero-browser">
         <div class="browser-chrome">
             <span class="browser-dot browser-dot-red"></span>
@@ -57,19 +53,19 @@
                 <div class="stat-bar-row">
                     <span class="stat-bar-label">Food</span>
                     <div class="stat-bar-track">
-                        <div class="stat-bar-fill" style="width:77%;background:#d4960a;"></div>
+                        <div class="stat-bar-fill" style="width: 75%; background: var(--accent-2);"></div>
                     </div>
                 </div>
                 <div class="stat-bar-row">
                     <span class="stat-bar-label">Travel</span>
                     <div class="stat-bar-track">
-                        <div class="stat-bar-fill" style="width:58%;background:#4a7fc1;"></div>
+                        <div class="stat-bar-fill" style="width: 55%; background: #5b7fa6;"></div>
                     </div>
                 </div>
                 <div class="stat-bar-row">
                     <span class="stat-bar-label">Bills</span>
                     <div class="stat-bar-track">
-                        <div class="stat-bar-fill" style="width:42%;background:#7b6cd0;"></div>
+                        <div class="stat-bar-fill" style="width: 45%; background: #7c6fcd;"></div>
                     </div>
                 </div>
             </div>
@@ -105,19 +101,16 @@
     </div>
 </section>
 
-<!-- Video modal -->
-<div class="video-modal" id="videoModal" aria-hidden="true">
-    <div class="video-modal-backdrop" id="videoBackdrop"></div>
+<div class="video-modal" id="video-modal">
+    <div class="video-modal-backdrop" id="modal-backdrop"></div>
     <div class="video-modal-box">
-        <button class="video-modal-close" id="videoClose" aria-label="Close">&times;</button>
+        <button class="video-modal-close" id="modal-close" aria-label="Close">&#x2715;</button>
         <div class="video-modal-embed">
             <iframe
-                id="videoIframe"
+                id="modal-iframe"
+                data-src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
                 src=""
-                data-src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                title="Spendly — See how it works"
-                frameborder="0"
-                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow="autoplay; encrypted-media"
                 allowfullscreen>
             </iframe>
         </div>
@@ -129,39 +122,29 @@
 {% block scripts %}
 <script>
 (function () {
-    var modal    = document.getElementById('videoModal');
-    var backdrop = document.getElementById('videoBackdrop');
-    var closeBtn = document.getElementById('videoClose');
-    var iframe   = document.getElementById('videoIframe');
-    var trigger  = document.getElementById('btnSeeHow');
+    var btn      = document.getElementById('btn-see-how');
+    var modal    = document.getElementById('video-modal');
+    var backdrop = document.getElementById('modal-backdrop');
+    var closeBtn = document.getElementById('modal-close');
+    var iframe   = document.getElementById('modal-iframe');
 
     function openModal() {
         iframe.src = iframe.dataset.src;
         modal.classList.add('is-open');
-        modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
     }
 
     function closeModal() {
         iframe.src = '';
         modal.classList.remove('is-open');
-        modal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
     }
 
-    trigger.addEventListener('click', function (e) {
+    btn.addEventListener('click', function (e) {
         e.preventDefault();
         openModal();
     });
 
     closeBtn.addEventListener('click', closeModal);
     backdrop.addEventListener('click', closeModal);
-
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && modal.classList.contains('is-open')) {
-            closeModal();
-        }
-    });
 }());
 </script>
 {% endblock %}
