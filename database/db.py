@@ -1,7 +1,7 @@
 import os
 import sqlite3
 
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 _DB_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -45,6 +45,42 @@ def init_db():
     )
     conn.commit()
     conn.close()
+
+
+def create_user(name, email, password):
+    conn = get_db()
+    try:
+        cursor = conn.execute(
+            "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+            (name, email, generate_password_hash(password)),
+        )
+        user_id = cursor.lastrowid
+        conn.commit()
+    finally:
+        conn.close()
+    return user_id
+
+
+def get_user_by_email(email):
+    conn = get_db()
+    try:
+        user = conn.execute(
+            "SELECT * FROM users WHERE email = ?", (email,)
+        ).fetchone()
+    finally:
+        conn.close()
+    return user
+
+
+def get_user_by_id(user_id):
+    conn = get_db()
+    try:
+        user = conn.execute(
+            "SELECT * FROM users WHERE id = ?", (user_id,)
+        ).fetchone()
+    finally:
+        conn.close()
+    return user
 
 
 def seed_db():
