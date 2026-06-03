@@ -83,6 +83,43 @@ def get_user_by_id(user_id):
     return user
 
 
+def get_monthly_summary(user_id):
+    conn = get_db()
+    try:
+        row = conn.execute(
+            """
+            SELECT COALESCE(SUM(amount), 0.0) AS total, COUNT(*) AS count
+            FROM expenses
+            WHERE user_id = ?
+              AND strftime('%Y-%m', date) = strftime('%Y-%m', 'now')
+            """,
+            (user_id,),
+        ).fetchone()
+        monthly_total = float(row["total"])
+        monthly_count = row["count"]
+
+        by_category = conn.execute(
+            """
+            SELECT category,
+                   COUNT(*)    AS count,
+                   SUM(amount) AS total
+            FROM expenses
+            WHERE user_id = ?
+              AND strftime('%Y-%m', date) = strftime('%Y-%m', 'now')
+            GROUP BY category
+            ORDER BY total DESC
+            """,
+            (user_id,),
+        ).fetchall()
+    finally:
+        conn.close()
+    return {
+        "monthly_total": monthly_total,
+        "monthly_count": monthly_count,
+        "by_category": by_category,
+    }
+
+
 def seed_db():
     conn = get_db()
     row = conn.execute("SELECT COUNT(*) FROM users").fetchone()
