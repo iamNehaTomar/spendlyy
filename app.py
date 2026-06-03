@@ -1,9 +1,9 @@
 import sqlite3
 
-from flask import Flask, render_template, request, redirect, session, url_for, abort
+from flask import Flask, flash, render_template, request, redirect, session, url_for, abort
 from werkzeug.security import check_password_hash
 
-from database.db import get_db, init_db, seed_db, create_user, get_user_by_email, get_user_by_id
+from database.db import get_db, init_db, seed_db, create_user, get_user_by_email, get_user_by_id, get_monthly_summary
 
 app = Flask(__name__)
 app.secret_key = "spendly-dev-secret"  # dev only — replace with env var before production
@@ -31,6 +31,8 @@ def privacy():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "GET":
+        if session.get("user_id"):
+            return redirect(url_for("dashboard"))
         return render_template("register.html")
 
     name = request.form.get("name", "").strip()
@@ -56,6 +58,8 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
+        if session.get("user_id"):
+            return redirect(url_for("dashboard"))
         return render_template("login.html")
 
     email = request.form.get("email", "").strip()
@@ -77,11 +81,13 @@ def dashboard():
     if user is None:
         session.clear()
         return redirect(url_for("login"))
-    return render_template("dashboard.html", user=user, monthly_total=0, monthly_count=0, by_category=[])
+    summary = get_monthly_summary(session["user_id"])
+    return render_template("dashboard.html", user=user, **summary)
 
 
 @app.route("/logout")
 def logout():
+    flash("You've been signed out.", "info")
     session.clear()
     return redirect(url_for("landing"))
 

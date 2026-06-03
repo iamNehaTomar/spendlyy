@@ -8,6 +8,12 @@
 
 {% block content %}
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="site-flash site-flash--{{ category }}">{{ message }}</div>
+    {% endfor %}
+{% endwith %}
+
 <section class="hero">
     <div class="hero-badge-pill">
         <span class="badge-dot"></span>
