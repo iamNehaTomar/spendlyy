@@ -32,7 +32,7 @@ def privacy():
 def register():
     if request.method == "GET":
         if session.get("user_id"):
-            return redirect(url_for("dashboard"))
+            return redirect(url_for("profile"))
         return render_template("register.html")
 
     name = request.form.get("name", "").strip()
@@ -52,14 +52,14 @@ def register():
         return render_template("register.html", error="An account with that email already exists.")
 
     session["user_id"] = user_id
-    return redirect(url_for("dashboard"))
+    return redirect(url_for("profile"))
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
         if session.get("user_id"):
-            return redirect(url_for("dashboard"))
+            return redirect(url_for("profile"))
         return render_template("login.html")
 
     email = request.form.get("email", "").strip()
@@ -70,7 +70,7 @@ def login():
         return render_template("login.html", error="Invalid email or password.")
 
     session["user_id"] = user["id"]
-    return redirect(url_for("dashboard"))
+    return redirect(url_for("profile"))
 
 
 @app.route("/dashboard")
@@ -99,7 +99,52 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    db_user = get_user_by_id(session["user_id"])
+    if db_user is None:
+        session.clear()
+        return redirect(url_for("login"))
+
+    from datetime import datetime
+    try:
+        member_since = datetime.strptime(db_user["created_at"], "%Y-%m-%d %H:%M:%S").strftime("%B %d, %Y")
+    except (ValueError, TypeError):
+        member_since = db_user["created_at"]
+
+    user = {
+        "name": db_user["name"],
+        "email": db_user["email"],
+        "member_since": member_since,
+    }
+
+    stats = {
+        "total_spent": 364.24,
+        "transaction_count": 8,
+        "top_category": "Bills",
+    }
+
+    transactions = [
+        {"date": "May 19, 2026", "description": "Grocery run",   "category": "Food",          "amount": 22.75},
+        {"date": "May 16, 2026", "description": "Miscellaneous", "category": "Other",         "amount": 15.00},
+        {"date": "May 13, 2026", "description": "New shoes",     "category": "Shopping",      "amount": 89.99},
+        {"date": "May 10, 2026", "description": "Movie tickets", "category": "Entertainment", "amount": 25.00},
+        {"date": "May 08, 2026", "description": "Pharmacy",      "category": "Health",        "amount": 35.00},
+    ]
+
+    categories = [
+        {"name": "Bills",         "total": 120.00, "pct": 33},
+        {"name": "Shopping",      "total":  89.99, "pct": 25},
+        {"name": "Transport",     "total":  45.00, "pct": 12},
+        {"name": "Health",        "total":  35.00, "pct": 10},
+        {"name": "Food",          "total":  35.25, "pct":  9},
+        {"name": "Entertainment", "total":  25.00, "pct":  7},
+        {"name": "Other",         "total":  15.00, "pct":  4},
+    ]
+
+    return render_template("profile.html", user=user, stats=stats,
+                           transactions=transactions, categories=categories)
 
 
 @app.route("/expenses/add")
